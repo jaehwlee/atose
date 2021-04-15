@@ -2,7 +2,7 @@ import numpy as np
 import math
 from tensorflow.keras.utils import Sequence
 import os
-
+np.random.seed(42)
 
 class DataLoader(Sequence):
     def __init__(self, root, split, batch_size=16, input_length=80000, shuffle=False):

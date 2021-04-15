@@ -3,7 +3,6 @@ import tensorflow as tf
 import math
 import librosa
 from kapre import STFT, Magnitude, MagnitudeToDecibel
-
 def hz_to_midi(hz):
     return 12 * (torch.log2(hz) - np.log2(440.0)) + 69
 
@@ -45,7 +44,7 @@ def initialize_filterbank(sample_rate, n_harmonic, semitone_scale):
 class HarmonicSTFT(tf.keras.layers.Layer):
     def __init__(self,
                  sample_rate=16000,
-                 n_fft=513,
+                 n_fft=512,
                  win_length=None,
                  hop_length=None,
                  pad=0,
@@ -67,8 +66,8 @@ class HarmonicSTFT(tf.keras.layers.Layer):
         self.n_fft = n_fft
         #self.fft_bins = tf.linspace(0, tf.cast(self.sample_rate//2, tf.int32), self.n_fft//2 + 1)
         self.fft_bins = tf.linspace(0, self.sample_rate//2, self.n_fft//2+1)
-        #self.stft = STFT(n_fft = self.n_fft, win_length=self.win_length, hop_length = self.hop_length, window_name='hann_window',  input_shape=(80000,1))
-        self.stft = STFT(n_fft=self.n_fft, win_length=self.win_length, hop_length=254, window_name='hann_window', input_shape=(80000,1))
+        self.stft = STFT(n_fft = self.n_fft, win_length=self.win_length, hop_length = 256, window_name='hann_window',  input_shape=(80000,1), pad_begin=True)
+        #self.stft = STFT(n_fft=self.n_fft, win_length=self.win_length, hop_length=256, window_name='hann_window', input_shape=(80000,1))
         self.magnitude = Magnitude()
         self.to_decibel = MagnitudeToDecibel()
         self.zero = tf.zeros([1,])
@@ -78,9 +77,10 @@ class HarmonicSTFT(tf.keras.layers.Layer):
         harmonic_hz, self.level = initialize_filterbank(sample_rate, n_harmonic, semitone_scale)
 
         # Center frequncies to tensor
+        # 진짜 학습이 되고 있는가?
         self.f0 = tf.constant(harmonic_hz, dtype='float32')
         # Bandwidth parameters
-        self.bw_Q = tf.constant(np.array([bw_Q]), dtype='float32')
+        self.bw_Q = tf.Variable(np.array([bw_Q]), dtype='float32', trainable=True)
 
     def get_harmonic_fb(self):
         # bandwidth
@@ -116,18 +116,22 @@ class HarmonicSTFT(tf.keras.layers.Layer):
         return log_spec
 
     def call(self, input_tensor, training=False):
+        #tf.print(self.f0)
         waveform = tf.keras.layers.Reshape((-1, 1))(input_tensor)
         spec = self.stft(waveform)
+        #print(spec)
         spec = self.magnitude(spec)
         #spec = power_to_db(spec)
         harmonic_fb = self.get_harmonic_fb()
+        #print(harmonic_fb)
         harmonic_fb = tf.expand_dims(harmonic_fb, axis=0)
-        harmonic_fb = tf.stack([harmonic_fb, harmonic_fb, harmonic_fb, harmonic_fb, harmonic_fb, harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb])
+        #harmonic_fb = tf.stack([harmonic_fb, harmonic_fb, harmonic_fb, harmonic_fb, harmonic_fb, harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb,harmonic_fb])
         #harmonic_fb = tf.dtypes.cast(harmonic_fb, dtype=tf.float32)
         harmonic_spec = tf.matmul(tf.transpose(spec, perm=[0,3, 1, 2]), harmonic_fb)
         b, c, w, h = harmonic_spec.shape
         harmonic_spec = tf.keras.layers.Reshape((-1, h//self.n_harmonic, self.n_harmonic))(harmonic_spec)
         harmonic_spec = tf.transpose(harmonic_spec, perm=[0, 2, 1, 3])
+       # print(harmonic_spec)
         harmonic_spec = self.to_decibel(harmonic_spec)
         return harmonic_spec
 
@@ -157,7 +161,7 @@ class ResNet_mtat(tf.keras.layers.Layer):
         self.relu = tf.keras.layers.Activation('relu')
         self.gmp = tf.keras.layers.GlobalMaxPooling2D()
 
-    def call(self, x, training=False):
+    def call(self, x, training=False): 
         # residual convolution
         x = self.res1(x, training=training)
         x = self.res2(x, training=training)
@@ -168,7 +172,9 @@ class ResNet_mtat(tf.keras.layers.Layer):
         x = self.res7(x, training=training)
 
         # global max pooling
+        # (16, 256), 결국 여기는 256차원이네?
         x = self.gmp(x)
+        #print(x.shape)
 
         # fully connected
         x = self.fc_1(x, training=training)
@@ -178,6 +184,87 @@ class ResNet_mtat(tf.keras.layers.Layer):
         x = self.fc_2(x, training=training)
         x = self.activation(x, training=training)
         return x
+
+
+
+
+
+############################################################
+# for tag ae
+#############################################################
+
+class DenseLeakyReluLayer(tf.keras.layers.Layer):
+    """A dense layer followed by a LeakyRelu layer
+    """
+
+    def __init__(self, n, alpha=0.3):
+        super(DenseLeakyReluLayer, self).__init__()
+        self.dense = tf.keras.layers.Dense(n, activation=None)
+        self.norm = tf.keras.layers.BatchNormalization()
+        self.lrelu = tf.keras.layers.LeakyReLU(alpha=alpha)
+
+    def call(self, input_tensor):
+        x = self.dense(input_tensor)
+        return self.lrelu(x)
+
+
+
+class UnitNormLayer(tf.keras.layers.Layer):
+    """Normalize vectors (euclidean norm) in batch to unit hypersphere.
+    """
+
+    def __init__(self):
+        super(UnitNormLayer, self).__init__()
+
+    def call(self, input_tensor):
+        norm = tf.norm(input_tensor, axis=1)
+        return input_tensor / tf.reshape(norm, [-1, 1])
+
+
+
+
+class Wave_ResNet(tf.keras.layers.Layer):
+    def __init__(self, input_channels, conv_channels=128):
+        super(Wave_ResNet, self).__init__()
+        self.num_class = 50
+        
+        '''
+        # residual convolution
+        self.res1 = Conv3_2d(conv_channels, 2)
+        self.res2 = Conv3_2d_resmp(conv_channels, 2)
+        self.res3 = Conv3_2d_resmp(conv_channels, 2)
+        self.res4 = Conv3_2d_resmp(conv_channels, 2)
+        self.res5 = Conv3_2d(conv_channels*2, 2)
+        self.res6 = Conv3_2d_resmp(conv_channels*2, (2, 3))
+        self.res7 = Conv3_2d_resmp(conv_channels* 2, (2, 3))
+        '''
+        self.res1 = Conv3_2d(conv_channels, 2)
+        self.res2 = Conv3_2d_resmp(conv_channels, 2)
+        self.res3 = Conv3_2d_resmp(conv_channels, 2)
+        self.res4 = Conv3_2d(conv_channels*2, 2)
+        self.res5 = Conv3_2d_resmp(conv_channels*2, 2)
+        self.res6 = Conv3_2d_resmp(conv_channels*2, (2,3))
+        self.res7 = Conv3_2d(conv_channels*2*2, (2,3))
+        # fully connected
+        #self.gmp = tf.keras.layers.Flatten()
+        self.gmp = tf.keras.layers.GlobalMaxPooling2D()
+        self.concat = tf.keras.layers.Concatenate()
+
+    def call(self, x, training=False):
+        # residual convolution
+        x1 = self.res1(x, training=training)
+        x2 = self.res2(x1, training=training)
+        x3 = self.res3(x2, training=training)
+        x4 = self.res4(x3, training=training)
+        x5 = self.res5(x4, training=training)
+        x6 = self.res6(x5, training=training)
+        x7 = self.res7(x6, training=training)
+
+        return self.concat([self.gmp(x5), self.gmp(x6), self.gmp(x7)])
+
+        # global max pooling
+        # (16, 256), 결국 여기는 256차원이네?
+        #return self.gmp(x)
 
 
 
@@ -209,3 +296,37 @@ class Conv3_2d_resmp(tf.keras.layers.Layer):
         out = self.mp(self.relu(out), training=training)
         return out
 
+##################################################################################
+# for tag ae
+#################################################################################
+'''
+class Conv3_2d(tf.keras.layers.Layer):
+    def __init__(self, output_channels, pooling=2):
+        super(Conv3_2d, self).__init__()
+        self.conv = tf.keras.layers.Conv2D(output_channels, kernel_size=(3,3) , padding='same')
+        self.bn = tf.keras.layers.BatchNormalization()
+        self.norm = UnitNormLayer()
+        self.relu = tf.keras.layers.LeakyReLU(alpha=0.3)
+        self.mp = tf.keras.layers.MaxPooling2D((pooling))
+    def call(self, x, training=False):
+        out = self.mp(self.relu(self.norm(self.conv(x, training=training), training=training)), training=training)
+        return out
+
+
+class Conv3_2d_resmp(tf.keras.layers.Layer):
+    def __init__(self, output_channels, pooling=2):
+        super(Conv3_2d_resmp, self).__init__()
+        self.conv_1 = tf.keras.layers.Conv2D(output_channels, kernel_size=(3,3), padding='same')
+        self.bn_1 = tf.keras.layers.BatchNormalization()
+        self.conv_2 = tf.keras.layers.Conv2D(output_channels, kernel_size=(3,3), padding='same')
+        self.bn_2 = tf.keras.layers.BatchNormalization()
+        self.norm = UnitNormLayer()
+        self.norm2 = UnitNormLayer()
+        self.relu = tf.keras.layers.LeakyReLU(alpha=0.3)
+        self.mp = tf.keras.layers.MaxPooling2D((pooling))
+    def call(self, x, training=False):
+        out = self.relu(self.norm2(self.conv_2(self.relu(self.norm(self.conv_1(x, training=training), training=training)), training=training), training=training))
+        out = x + out
+        out = self.mp(self.relu(out), training=training)
+        return out
+'''
