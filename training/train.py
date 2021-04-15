@@ -49,7 +49,8 @@ classifier = SupervisedClassifier()
 # define loss and metrics
 bce_loss = tf.keras.losses.BinaryCrossentropy()
 mae_loss = tf.keras.losses.MeanSquaredError()
-kld_loss = tf.keras.losses.MeanSquaredError()
+#kld_loss = tf.keras.losses.MeanSquaredError()
+kld_loss = tf.keras.losses.CosineSimilarity()
 sparse_loss = tf.keras.losses.KLDivergence()
 
 
@@ -76,10 +77,10 @@ stage2_template = "Epoch : {}, Loss : {:.5f}, AUC : {:.2f}%"
 
 
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-train_log_dir = "logs/gradient_tape/" + current_time + "/train"
-test_log_dir = "logs/gradient_tape/" + current_time + "/test"
-train_summary_writer = tf.summary.create_file_writer(train_log_dir)
-test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+#train_log_dir = "logs/gradient_tape/" + current_time + "/train"
+#test_log_dir = "logs/gradient_tape/" + current_time + "/test"
+#train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+#test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
 adam = tf.keras.optimizers.Adam(learning_rate=1e-4)
 sgd = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
@@ -116,7 +117,7 @@ def stage1_adam_train_step(wave, labels):
         # recon_loss : autoencoder loss
         # repre_loss : loss between rese and autoencoder
         recon_loss = mae_loss(labels, predictions)
-        repre_loss = kld_loss(z2, r1)
+        repre_loss = (1-kld_loss(z2, r1))
         total_loss = recon_loss + repre_loss
 
     train_variable = (
@@ -149,7 +150,7 @@ def stage1_sgd_train_step(wave, labels):
         predictions = tag_decoder(z2, training=True)
 
         recon_loss = mae_loss(labels, predictions)
-        repre_loss = kld_loss(z2, r1)
+        repre_loss = (1-kld_loss(z2, r1))
         total_loss = recon_loss + repre_loss
 
     train_variable = (
@@ -336,3 +337,8 @@ print("Time taken : ", time.time() - start_time)
 
 test_result = test_template.format(valid_loss.result(), valid_auc.result() * 100)
 print(test_result)
+tf.keras.models.save_model(wave_encoder, "./tmp/wave_encoder")
+tf.keras.models.save_model(wave_projector, "./tmp/wave_projector")
+tf.keras.models.save_model(tag_encoder, "./tmp/tag_encoder")
+tf.keras.models.save_model(tag_decoder, "./tmp/tag_decoder")
+tf.keras.models.save_model(classifier, "./tmp/classifier")
