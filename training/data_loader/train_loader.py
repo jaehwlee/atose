@@ -2,10 +2,10 @@ import numpy as np
 import math
 from tensorflow.keras.utils import Sequence
 import os
-
+np.random.seed(42)
 
 class TrainLoader(Sequence):
-    def __init__(self, root, split, batch_size=16, input_length=59049, shuffle=False):
+    def __init__(self, root, split, batch_size=16, input_length=80000, shuffle=False):
         self.root = root
         self.input_length = input_length
         self.split = split + ".npy"
@@ -22,7 +22,7 @@ class TrainLoader(Sequence):
         for i in range(self.batch_size):
             file_index = idx * self.batch_size + i
             if file_index >= 15247:
-                npy_list.append(np.zeros((59049,)))
+                npy_list.append(np.zeros((self.input_length,)))
                 tag_list.append(np.zeros((50,)))
                 continue
 

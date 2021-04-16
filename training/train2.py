@@ -1,6 +1,6 @@
 import time
 import datetime
-import tensorflow.keras.backend as K
+
 import os
 from tqdm import tqdm
 import tensorflow as tf
@@ -15,7 +15,7 @@ from model import (
 )
 
 # select GPU
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # fix random seed
 SEED = 42
@@ -35,18 +35,7 @@ BATCH_SIZE = 16
 NORMALIZE_EMBEDDING = True
 PROJECTION_DIM = 128
 ACTIVATION = "leaky_relu"
-def contrastive_loss(y, preds, margin=1):
-	# explicitly cast the true class label data type to the predicted
-	# class label data type (otherwise we run the risk of having two
-	# separate data types, causing TensorFlow to error out)
-	y = tf.cast(y, preds.dtype)
-	# calculate the contrastive loss between the true labels and
-	# the predicted labels
-	squaredPreds = K.square(preds)
-	squaredMargin = K.square(K.maximum(margin - preds, 0))
-	loss = K.mean(y * squaredPreds + (1 - y) * squaredMargin)
-	# return the computed contrastive loss to the calling function
-	return loss
+
 
 # define models
 wave_encoder = WaveEncoder()
@@ -61,7 +50,7 @@ classifier = SupervisedClassifier()
 bce_loss = tf.keras.losses.BinaryCrossentropy()
 mae_loss = tf.keras.losses.MeanSquaredError()
 #kld_loss = tf.keras.losses.MeanSquaredError()
-#kld_loss = tf.keras.losses.CosineSimilarity()
+kld_loss = tf.keras.losses.CosineSimilarity()
 sparse_loss = tf.keras.losses.KLDivergence()
 
 
@@ -88,17 +77,17 @@ stage2_template = "Epoch : {}, Loss : {:.5f}, AUC : {:.2f}%"
 
 
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-#train_log_dir = "logs/gradient_tape/" + current_time + "/train"
-#test_log_dir = "logs/gradient_tape/" + current_time + "/test"
-#train_summary_writer = tf.summary.create_file_writer(train_log_dir)
-#test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+train_log_dir = "logs/gradient_tape/" + current_time + "/train"
+test_log_dir = "logs/gradient_tape/" + current_time + "/test"
+train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
 adam = tf.keras.optimizers.Adam(learning_rate=1e-4)
 sgd = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
 sgd2 = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
 
 
-def load_data(root="../../tf2-music-tagging-models/dataset"):
+def load_data(root="../../semantic-tagging/dataset"):
     train_data = TrainLoader(root=root, split="train")
     valid_data = DataLoader(root=root, split="valid")
     test_data = DataLoader(root=root, split="test")
@@ -127,8 +116,8 @@ def stage1_adam_train_step(wave, labels):
         # 2. calculate Loss
         # recon_loss : autoencoder loss
         # repre_loss : loss between rese and autoencoder
-        recon_loss = mae_loss(labels, predictions) 
-        repre_loss = contrastive_loss(z2, r1)
+        recon_loss = mae_loss(labels, predictions)
+        repre_loss = (1-kld_loss(z2, r1))
         total_loss = recon_loss + repre_loss
 
     train_variable = (
@@ -161,7 +150,7 @@ def stage1_sgd_train_step(wave, labels):
         predictions = tag_decoder(z2, training=True)
 
         recon_loss = mae_loss(labels, predictions)
-        repre_loss = contrastive_loss(z2, r1)
+        repre_loss = (1-kld_loss(z2, r1))
         total_loss = recon_loss + repre_loss
 
     train_variable = (
@@ -348,8 +337,3 @@ print("Time taken : ", time.time() - start_time)
 
 test_result = test_template.format(valid_loss.result(), valid_auc.result() * 100)
 print(test_result)
-tf.keras.models.save_model(wave_encoder, "./tmp/wave_encoder")
-tf.keras.models.save_model(wave_projector, "./tmp/wave_projector")
-tf.keras.models.save_model(tag_encoder, "./tmp/tag_encoder")
-tf.keras.models.save_model(tag_decoder, "./tmp/tag_decoder")
-tf.keras.models.save_model(classifier, "./tmp/classifier")
