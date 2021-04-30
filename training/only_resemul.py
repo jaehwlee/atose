@@ -13,7 +13,7 @@ from model import (
     WaveProjector,
     SupervisedClassifier,
 )
-from resemul import resemul
+from real_resemul import resemul
 
 
 import argparse
@@ -115,11 +115,11 @@ def load_data(root="../../tf2-harmonic-cnn/dataset"):
 def adam_stage2_train_step(wave, labels):
     with tf.GradientTape() as tape:
 
-        z = wave_encoder(wave, training=True)
-        predictions = classifier(z, training=True)
+        predictions = wave_encoder(wave, training=True)
+        #predictions = classifier(z, training=True)
         loss = bce_loss(labels, predictions)
 
-    train_variable = wave_encoder.trainable_variables + classifier.trainable_variables
+    train_variable = wave_encoder.trainable_variables
     gradients = tape.gradient(loss, train_variable)
 
     adam.apply_gradients(zip(gradients, train_variable))
@@ -132,11 +132,10 @@ def adam_stage2_train_step(wave, labels):
 def sgd_stage2_train_step(wave, labels):
     with tf.GradientTape() as tape:
 
-        z = wave_encoder(wave, training=True)
-        predictions = classifier(z, training=True)
+        predictions = wave_encoder(wave, training=True)
         loss = bce_loss(labels, predictions)
 
-    train_variable = wave_encoder.trainable_variables + classifier.trainable_variables
+    train_variable = wave_encoder.trainable_variables 
     gradients = tape.gradient(loss, train_variable)
 
     sgd2.apply_gradients(zip(gradients, train_variable))
@@ -147,8 +146,7 @@ def sgd_stage2_train_step(wave, labels):
 
 @tf.function
 def stage2_test_step(wave, labels):
-    z = wave_encoder(wave, training=False)
-    predictions = classifier(z, training=False)
+    predictions = wave_encoder(wave, training=False)
 
     loss = bce_loss(labels, predictions)
     valid_loss(loss)
@@ -158,8 +156,7 @@ def stage2_test_step(wave, labels):
 
 @tf.function
 def test_step(wave, laels):
-    z = wave_encoder(wave, training=False)
-    predictions = classifier(z, training=False)
+    predictions = wave_encoder(wave, training=False)
 
     loss = bce_loss(labels, predictions)
     test_loss(loss)
@@ -245,4 +242,4 @@ for wave, labels in tqdm(test_ds):
     test_step(wave, labels)
 print(test_loss.result(), test_auc.result()*100, pr_auc.result())
 
-tf.keras.models.save_model(wave_encoder, "./models/only_rese/rese/")
+#tf.keras.models.save_model(wave_encoder, "./models/only_rese/rese/")
