@@ -86,11 +86,11 @@ class WaveProjector(tf.keras.Model):
     def __init__(self, n, normalize=True, activation="leaky_relu"):
         super(WaveProjector, self).__init__(name="")
         if activation == "leaky_relu":
-            self.dense = DenseLeakyReluLayer(128)
-            self.dense2 = DenseLeakyReluLayer(128)
+            self.dense = DenseLeakyReluLayer(n)
+            self.dense2 = DenseLeakyReluLayer(n)
         else:
-            self.dense = tf.keras.layers.Dense(128, activation=activation)
-            self.dense2 = tf.keras.layers.Dense(128, activation=activation)
+            self.dense = tf.keras.layers.Dense(n, activation=activation)
+            self.dense2 = tf.keras.layers.Dense(n, activation=activation)
 
         self.normalize = normalize
         if self.normalize:
@@ -132,17 +132,17 @@ class TagEncoder(tf.keras.Model):
     """An encoder network, E(·), which maps an augmented image x to a representation vector, r = E(x) ∈ R^{DE}
     """
 
-    def __init__(self, normalize=True, activation="leaky_relu"):
+    def __init__(self, n, normalize=True, activation="leaky_relu"):
         super(TagEncoder, self).__init__(name="")
 
         if activation == "leaky_relu":
-            self.hidden1 = DenseLeakyReluLayer(128)
-            self.hidden2 = DenseLeakyReluLayer(128)
+            self.hidden1 = DenseLeakyReluLayer(n)
+            self.hidden2 = DenseLeakyReluLayer(n)
             #self.hidden3 = DenseLeakyReluLayer(128)
 
         else:
-            self.hidden1 = tf.keras.layers.Dense(128, activation=activation)
-            self.hidden2 = tf.keras.layers.Dense(128, activation=activation)
+            self.hidden1 = tf.keras.layers.Dense(n, activation=activation)
+            self.hidden2 = tf.keras.layers.Dense(n, activation=activation)
             #self.hidden3 = tf.keras.layers.Dense(128, activation=activation)
 
         self.normalize = normalize
@@ -162,9 +162,9 @@ class TagEncoder(tf.keras.Model):
 
 
 class TagDecoder(tf.keras.Model):
-    def __init__(self, dimension=50):
+    def __init__(self, n, dimension=50):
         super(TagDecoder, self).__init__(name="")
-        self.dense = DenseLeakyReluLayer(128)
+        self.dense = DenseLeakyReluLayer(n)
         self.dense2 = tf.keras.layers.Dense(dimension, activation="sigmoid")
 
     def call(self, input_tensor, training=False):
