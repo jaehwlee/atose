@@ -13,39 +13,27 @@ from model import (
     WaveProjector,
     SupervisedClassifier,
 )
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+from model import resemul
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # fix random seed
 SEED = 42
 tf.random.set_seed(SEED)
 
 
-def contrastive_loss(y, preds, margin=1):
-	# explicitly cast the true class label data type to the predicted
-	# class label data type (otherwise we run the risk of having two
-	# separate data types, causing TensorFlow to error out)
-	y = tf.cast(y, preds.dtype)
-	# calculate the contrastive loss between the true labels and
-	# the predicted labels
-	squaredPreds = K.square(preds)
-	squaredMargin = K.square(K.maximum(margin - preds, 0))
-	loss = K.mean(y * squaredPreds + (1 - y) * squaredMargin)
-	# return the computed contrastive loss to the calling function
-	return loss
-
-
 class Solver(object):
     def __init__(self, config):
+        os.environ["CUDA_VISIBLE_DEVICES"] = config.gpu
         self.data_path = config.data_path
-
         self.model_save_path = config.model_save_path
         self.withJE = config.withJE
         self.data_path = config.data_path
+        self.block = config.block
         self.stage1_test_template = "AELoss : {:.5f}"
         self.stage1_train_template = "Epoch: {}, TotalLoss : {:.4f},  AELoss : {:.4f}, PWLoss : {:.4f}"
         self.stage2_test_template = "Test Loss : {}, Test AUC : {:.4f}, Test PR-AUC : {:.4f}"
         self.stage2_train_template = "Epoch : {}, Loss : {:.4f}, AUC : {:.4f}, PR-AUC : {:.4f}"
-
+        self.encoder_type = config.encoder_type
         self.current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
         self.train_ds, self.valid_ds, self.test_ds = self.get_data(self.data_path)
@@ -53,6 +41,7 @@ class Solver(object):
         self.get_optimizer()
         self.get_loss()
         self.get_metric()
+        self.start_time = time.time()
 
 
     def get_data(self, root="../../tf2-harmonic-cnn/dataset"):
@@ -61,21 +50,31 @@ class Solver(object):
         test_data = DataLoader(root=root, split="test")
         return train_data, valid_data, test_data
 
+
     def get_model(self):
-        self.wave_encoder = WaveEncoder()
+        if self.encoder_type == "HC":
+            self.wave_encoder = WaveEncoder()
+        elif self.encoder_type == "SC":
+            self.wave_encoder = resemul(block_type=self.block)
+        elif self.encoder_type == "MS":
+            self.wave_encoder = resemul(ms=True, block_type="rese")
+        
         self.wave_projector = WaveProjector(128)
         self.classifier = SupervisedClassifier()
         self.tag_encoder = TagEncoder()
         self.tag_decoder = TagDecoder(50)
 
+
     def get_optimizer(self):
         self.adam = tf.keras.optimizers.Adam(learning_rate=1e-4)
         self.sgd = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
 
+
     def get_loss(self):
         self.c_loss = tf.keras.losses.BinaryCrossentropy()
         self.ae_loss = tf.keras.losses.MeanSquaredError()
-        self.pw_loss = tf.keras.metrics.CosineSimilarity()
+        self.pw_loss = tf.keras.losses.CosineSimilarity()
+
 
     def get_metric(self):
         self.s1_train_loss = tf.keras.metrics.Mean()
@@ -111,7 +110,7 @@ class Solver(object):
             # ae_loss : autoencoder loss
             # pw_loss : loss between rese and autoencoder
             ae_loss = self.ae_loss(labels, predictions) 
-            pw_loss = self.pw_loss(z2, r1)
+            pw_loss = (1-self.pw_loss(z2, r1)) + (1-self.pw_loss(1-z2, 1-r1))
             total_loss = ae_loss + pw_loss
 
         train_variable = (
@@ -131,7 +130,8 @@ class Solver(object):
         self.s1_train_ae(ae_loss)
         self.s1_train_pw(pw_loss)
         self.s1_train_loss(total_loss)
-    
+
+
     @tf.function
     def stage1_sgd_step(self, wave, labels):
         # apply GradientTape for differentiation
@@ -153,7 +153,7 @@ class Solver(object):
             # ae_loss : autoencoder loss
             # pw_loss : loss between rese and autoencoder
             ae_loss = self.ae_loss(labels, predictions)
-            pw_loss = self.pw_loss(z2, r1)
+            pw_loss = (1-self.pw_loss(z2, r1)) + (1-self.pw_loss(1-z2, 1-r1))
             total_loss = ae_loss + pw_loss
 
         train_variable = (
@@ -175,7 +175,6 @@ class Solver(object):
         self.s1_train_loss(total_loss)
 
 
-
     def stage1_train(self, epochs, optimizer):
         for epoch in range(epochs):
             for wave, labels in tqdm(self.train_ds):
@@ -190,15 +189,12 @@ class Solver(object):
             print(stage1_log)
 
 
-
-
     @tf.function
     def stage1_test_step(self, wave, labels):
         z = self.tag_encoder(labels, training=False)
         predictions = self.tag_decoder(z, training=False)
         recon_loss = self.ae_loss(labels, predictions)
         self.s1_test_loss(recon_loss)
-
 
 
     @tf.function
@@ -218,6 +214,7 @@ class Solver(object):
         self.s2_train_auc(labels, predictions)
         self.s2_train_pr(labels, predictions)
 
+
     @tf.function
     def stage2_sgd_step(self, wave, labels):
         with tf.GradientTape() as tape:
@@ -234,6 +231,7 @@ class Solver(object):
         self.s2_train_loss(loss)
         self.s2_train_auc(labels, predictions)
         self.s2_train_pr(labels, predictions)
+
 
     @tf.function
     def stage2_test_step(self, wave, labels):
@@ -263,7 +261,7 @@ class Solver(object):
             for valid_wave, valid_labels in tqdm(self.valid_ds):
                 self.stage2_test_step(valid_wave, valid_labels)
 
-            valid_log = stage2_test_template.format(epoch+1, self.s2_test_loss.result(), self.s2_test_auc.result(), self.s2_test_pr.result())
+            valid_log = self.stage2_test_template.format(self.s2_test_loss.result(), self.s2_test_auc.result(), self.s2_test_pr.result())
             print(valid_log)
 
 
@@ -273,13 +271,13 @@ class Solver(object):
 
         for i in range(3):
             if i == 0:
-                epochs = 1
+                epochs = 60
                 self.stage1_train(epochs, optimizer="adam")
             elif i == 1:
-                epochs = 1
+                epochs = 20
                 self.stage1_train(epochs, optimizer="sgd")
             else:
-                epochs = 1
+                epochs = 20
                 new_lr = 0.0001
                 self.sgd.lr.assign(new_lr)
                 self.stage1_train(epochs, optimizer="sgd")
@@ -295,29 +293,28 @@ class Solver(object):
         print("\n\n@@@@@@@@@@@@@@@@@@@Start training Stage 2@@@@@@@@@@@@@@@@@@\n")
         for i in range(4):
             if i == 0:
-                epochs = 1
+                epochs = 60
                 self.stage2_train(epochs, optimizer="adam")
             elif i == 1:
-                epochs = 1
+                epochs = 20
                 new_lr = 0.001
                 self.sgd.lr.assign(new_lr)
                 self.stage2_train(epochs, optimizer="sgd")
             elif i ==2:
-                epochs = 1
+                epochs = 20
                 new_lr = 0.0001
                 self.sgd.lr.assign(new_lr)
                 self.stage2_train(epochs, optimizer="sgd")
             else:
-                epochs= 1
+                epochs= 100
                 new_lr = 0.00001
                 self.sgd.lr.assign(new_lr)
                 self.stage2_train(epochs, optimizer="sgd")
 
-
         for wave, labels in tqdm(self.test_ds):
             self.stage2_test_step(wave, labels)
 
-        print("Time taken : ", time.time() - start_time)
+        print("Time taken : ", time.time() - self.start_time)
 
         test_result = self.stage2_test_template.format(self.s2_test_loss.result(), self.s2_test_auc.result(), self.s2_test_pr.result())
         print(test_result)
@@ -326,4 +323,3 @@ class Solver(object):
     def run(self):
         self.run_stage1()
         self.run_stage2()
-

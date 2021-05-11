@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('--block', type=str, default='se', choices=['se', 'rese', 'res', 'basic'])
     parser.add_argument('--withJE', type=bool, default=True)
     parser.add_argument('--data_path', type=str, default='./../../tf2-harmonic-cnn/dataset')
+    parser.add_argument('--encoder_type', type=str, default='HC', choices=['HC', 'SC', 'MS'])
     config = parser.parse_args()
 
 
