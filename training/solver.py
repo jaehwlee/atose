@@ -68,6 +68,7 @@ class Solver(object):
     def get_optimizer(self):
         self.adam = tf.keras.optimizers.Adam(learning_rate=1e-4)
         self.sgd = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
+        self.sgd2 = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
 
 
     def get_loss(self):
@@ -226,7 +227,7 @@ class Solver(object):
         train_variable = self.classifier.trainable_variables
         gradients = tape.gradient(loss, train_variable)
 
-        self.sgd.apply_gradients(zip(gradients, train_variable))
+        self.sgd2.apply_gradients(zip(gradients, train_variable))
 
         self.s2_train_loss(loss)
         self.s2_train_auc(labels, predictions)
@@ -297,18 +298,16 @@ class Solver(object):
                 self.stage2_train(epochs, optimizer="adam")
             elif i == 1:
                 epochs = 20
-                new_lr = 0.001
-                self.sgd.lr.assign(new_lr)
                 self.stage2_train(epochs, optimizer="sgd")
             elif i ==2:
                 epochs = 20
                 new_lr = 0.0001
-                self.sgd.lr.assign(new_lr)
+                self.sgd2.lr.assign(new_lr)
                 self.stage2_train(epochs, optimizer="sgd")
             else:
                 epochs= 100
                 new_lr = 0.00001
-                self.sgd.lr.assign(new_lr)
+                self.sgd2.lr.assign(new_lr)
                 self.stage2_train(epochs, optimizer="sgd")
 
         for wave, labels in tqdm(self.test_ds):

@@ -84,7 +84,7 @@ class WaveProjector(tf.keras.Model):
     suitable for computation of the contrastive loss.
     """
 
-    def __init__(self, n, normalize=True, activation="leaky_relu"):
+    def __init__(self, n=128, normalize=True, activation="leaky_relu"):
         super(WaveProjector, self).__init__(name="")
         if activation == "leaky_relu":
             self.dense = DenseLeakyReluLayer(n)
