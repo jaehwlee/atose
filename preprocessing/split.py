@@ -120,8 +120,6 @@ class Split:
         np.save(x_name, x)
         np.save(y_name, y)
 
-        # if os.path.isfile(fl):
-        # os.remove(fl)
 
     def run(self, data_path):
         self.data_path = data_path

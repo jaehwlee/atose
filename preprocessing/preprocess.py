@@ -5,9 +5,11 @@ from essentia.standard import MonoLoader
 import fire
 import tqdm
 
+
 def mu_law(x, mu=255):
     # reference : https://en.wikipedia.org/wiki/Μ-law_algorithm
     return np.sign(x) * np.log(1 + mu * np.abs(x)) / np.log(1 + mu)
+
 
 class Processor:
     def __init__(self):
@@ -33,7 +35,6 @@ class Processor:
                     x = self.get_npy(fn)
                     x = mu_law(x)
                     x = x / max(np.abs(x))
-                    #x = x / (np.max(np.abs(x)) + 1e-7)
                     np.save(open(npy_fn, "wb"), x)
                 except RuntimeError:
                     # some audio files are broken
