@@ -19,18 +19,6 @@ SEED = 42
 tf.random.set_seed(SEED)
 
 
-def contrastive_loss(y, preds, margin=0.4):
-        # explicitly cast the true class label data type to the predicted
-        # class label data type (otherwise we run the risk of having two
-        # separate data types, causing TensorFlow to error out)
-        y = tf.cast(y, preds.dtype)
-        # calculate the contrastive loss between the true labels and
-        # the predicted labels
-        squaredPreds = K.square(preds)
-        squaredMargin = K.square(K.maximum(margin - preds, 0))
-        loss = K.mean(y * squaredPreds + (1 - y) * squaredMargin)
-        # return the computed contrastive loss to the calling function
-        return loss
 
 
 class Solver(object):
@@ -130,8 +118,7 @@ class Solver(object):
             # ae_loss : autoencoder loss
             # pw_loss : loss between rese and autoencoder
             ae_loss = self.ae_loss(labels, predictions) 
-            #pw_loss = (1-self.pw_loss(z2, r1)) + (1-self.pw_loss(1-z2, 1-r1))
-            pw_loss = contrastive_loss(z2, r1)
+            pw_loss = (1-self.pw_loss(z2, r1)) + (1-self.pw_loss(1-z2, 1-r1))
             total_loss = ae_loss + pw_loss
 
         train_variable = (
@@ -174,8 +161,7 @@ class Solver(object):
             # ae_loss : autoencoder loss
             # pw_loss : loss between rese and autoencoder
             ae_loss = self.ae_loss(labels, predictions)
-            #pw_loss = (1-self.pw_loss(z2, r1)) + (1-self.pw_loss(1-z2, 1-r1))
-            pw_loss = contrastive_loss(z2, r1)
+            pw_loss = (1-self.pw_loss(z2, r1)) + (1-self.pw_loss(1-z2, 1-r1))
             total_loss = ae_loss + pw_loss
 
         train_variable = (
