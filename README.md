@@ -1,6 +1,6 @@
 # JETATAG : Joint Embeddings Training Algorithm for Auto-tagging
 
-This is the repository for the method presented in the paper: "Music Auto-tagging with Joint Embeddings" by J. Lee and M. Cho. It can learn not only acoustic features of music but also semantic information of tags without additional data. As a result, our model achevies state of the art in MTAT datasets. Other tasks (e.g. Acoustic scene classification, Keyword spotting) are also going to be added soon. [(pdf)](https://github.com/jaehwlee/jetatag/blob/main/assets/paper.pdf)
+This is the repository for the method presented in the paper: "Music Auto-tagging with Joint Embeddings" by J. Lee and M. Cho. It can learn not only acoustic features of music but also semantic information of tags without additional data. As a result, our model achevies state of the art in MTAT datasets. Other tasks (e.g. Acoustic scene classification, Keyword spotting) are also going to be added soon. 
 
 </br>
 
@@ -85,13 +85,6 @@ We confirmed that the performance of withJE has improved compared to the previou
     <td>0.5137</td>
     <td>0.9185</td>
     <td>0.5595</td>
-  </tr>
-  <tr>
-    <td>Music-SincNet</td>
-    <td>0.8616</td>
-    <td>0.3937</td>
-    <td>0.8823</td>
-    <td>0.4551</td>
   </tr>
   <tr>
     <td>Sample-CNN</td>
