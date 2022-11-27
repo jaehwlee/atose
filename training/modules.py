@@ -18,7 +18,7 @@ from tensorflow.keras.layers import (
     Concatenate,
     Add,
     ZeroPadding1D,
-    LeakyReLU
+    LeakyReLU,
 )
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.models import Model
@@ -28,25 +28,31 @@ from tensorflow.python.keras.utils import conv_utils
 
 from keras import initializers
 
+
 def hz_to_midi(hz):
     return 12 * (torch.log2(hz) - np.log2(440.0)) + 69
 
+
 def midi_to_hz(midi):
-    return 440.0 * (2.0 ** ((midi - 69.0)/12.0))
+    return 440.0 * (2.0 ** ((midi - 69.0) / 12.0))
+
 
 def note_to_hz(note):
     return librosa.core.note_to_hz(note)
 
+
 def note_to_midi(note):
     return librosa.core.note_to_midi(note)
+
 
 def hz_to_note(hz):
     return librosa.core.hz_to_note(hz)
 
+
 def initialize_filterbank(sample_rate, n_harmonic, semitone_scale):
     # MIDI
     # lowest note
-    low_midi = note_to_midi('C1')
+    low_midi = note_to_midi("C1")
 
     # highest note
     high_note = hz_to_note(sample_rate / (2 * n_harmonic))
@@ -55,30 +61,32 @@ def initialize_filterbank(sample_rate, n_harmonic, semitone_scale):
     # number of scales
     level = (high_midi - low_midi) * semitone_scale
     midi = np.linspace(low_midi, high_midi, level + 1)
-    #midi = tf.cast(midi, tf.float32)
+    # midi = tf.cast(midi, tf.float32)
     hz = midi_to_hz(midi[:-1])
 
     # stack harmonics
     harmonic_hz = []
     for i in range(n_harmonic):
-        harmonic_hz = np.concatenate((harmonic_hz, hz * (i+1)))
+        harmonic_hz = np.concatenate((harmonic_hz, hz * (i + 1)))
 
     return harmonic_hz, level
 
 
 class HarmonicSTFT(tf.keras.layers.Layer):
-    def __init__(self,
-                 sample_rate=16000,
-                 n_fft=512,
-                 win_length=None,
-                 hop_length=None,
-                 pad=0,
-                 power=2,
-                 normalized=False,
-                 n_harmonic=6,
-                 semitone_scale=2,
-                 bw_Q=1.0,
-                 learn_bw=None):
+    def __init__(
+        self,
+        sample_rate=16000,
+        n_fft=512,
+        win_length=None,
+        hop_length=None,
+        pad=0,
+        power=2,
+        normalized=False,
+        n_harmonic=6,
+        semitone_scale=2,
+        bw_Q=1.0,
+        learn_bw=None,
+    ):
         super(HarmonicSTFT, self).__init__()
 
         # Parameters
@@ -86,39 +94,53 @@ class HarmonicSTFT(tf.keras.layers.Layer):
         self.n_harmonic = n_harmonic
         self.bw_alpha = 0.1079
         self.bw_beta = 24.7
-        self.win_length=win_length
-        self.hop_length=hop_length
+        self.win_length = win_length
+        self.hop_length = hop_length
         self.n_fft = n_fft
-        self.fft_bins = tf.linspace(0, self.sample_rate//2, self.n_fft//2+1)
-        self.stft = STFT(n_fft = self.n_fft, win_length=self.win_length, hop_length = 256, window_name='hann_window',  input_shape=(80000,1), pad_begin=True)
+        self.fft_bins = tf.linspace(0, self.sample_rate // 2, self.n_fft // 2 + 1)
+        self.stft = STFT(
+            n_fft=self.n_fft,
+            win_length=self.win_length,
+            hop_length=256,
+            window_name="hann_window",
+            input_shape=(80000, 1),
+            pad_begin=True,
+        )
         self.magnitude = Magnitude()
         self.to_decibel = MagnitudeToDecibel()
-        self.zero = tf.zeros([1,])
+        self.zero = tf.zeros(
+            [
+                1,
+            ]
+        )
         # Spectrogram
 
         # Initialize the filterbank. Equally spaced in MIDI scale.
-        harmonic_hz, self.level = initialize_filterbank(sample_rate, n_harmonic, semitone_scale)
+        harmonic_hz, self.level = initialize_filterbank(
+            sample_rate, n_harmonic, semitone_scale
+        )
 
         # Center frequncies to tensor
-        self.f0 = tf.constant(harmonic_hz, dtype='float32')
+        self.f0 = tf.constant(harmonic_hz, dtype="float32")
         # Bandwidth parameters
-        self.bw_Q = tf.Variable(np.array([bw_Q]), dtype='float32', trainable=True)
+        self.bw_Q = tf.Variable(np.array([bw_Q]), dtype="float32", trainable=True)
 
     def get_harmonic_fb(self):
         # bandwidth
         bw = (self.bw_alpha * self.f0 + self.bw_beta) / self.bw_Q
         bw = tf.dtypes.cast(tf.expand_dims(bw, axis=0), dtype=tf.float32)
         f0 = tf.dtypes.cast(tf.expand_dims(self.f0, axis=0), dtype=tf.float32)
-        fft_bins =tf.dtypes.cast(tf.expand_dims(self.fft_bins, axis=1), dtype=tf.float32)
+        fft_bins = tf.dtypes.cast(
+            tf.expand_dims(self.fft_bins, axis=1), dtype=tf.float32
+        )
 
-        up_slope = tf.matmul(fft_bins, (2/bw)) + 1 - (2 * f0 / bw)
-        down_slope = tf.matmul(fft_bins, (-2/bw)) + 1 + (2 * f0 / bw)
+        up_slope = tf.matmul(fft_bins, (2 / bw)) + 1 - (2 * f0 / bw)
+        down_slope = tf.matmul(fft_bins, (-2 / bw)) + 1 + (2 * f0 / bw)
         fb = tf.math.maximum(self.zero, tf.math.minimum(down_slope, up_slope))
         return fb
-    
 
-    # Scale magnitude relative to maximum value in S. Zeros in the output
-    # correspond to positions where S == ref.
+        # Scale magnitude relative to maximum value in S. Zeros in the output
+        # correspond to positions where S == ref.
         ref = tf.reduce_max(S)
 
         log_spec = 10.0 * _tf_log10(tf.maximum(amin, S))
@@ -131,21 +153,21 @@ class HarmonicSTFT(tf.keras.layers.Layer):
     def call(self, input_tensor, training=False):
         # 80000, 1
         waveform = tf.keras.layers.Reshape((-1, 1))(input_tensor)
-        
+
         # stft
         spec = self.stft(waveform)
         spec = self.magnitude(spec)
-        
+
         harmonic_fb = self.get_harmonic_fb()
         harmonic_fb = tf.expand_dims(harmonic_fb, axis=0)
-        harmonic_spec = tf.matmul(tf.transpose(spec, perm=[0,3, 1, 2]), harmonic_fb)
+        harmonic_spec = tf.matmul(tf.transpose(spec, perm=[0, 3, 1, 2]), harmonic_fb)
         b, c, w, h = harmonic_spec.shape
-        harmonic_spec = tf.keras.layers.Reshape((-1, h//self.n_harmonic, self.n_harmonic))(harmonic_spec)
+        harmonic_spec = tf.keras.layers.Reshape(
+            (-1, h // self.n_harmonic, self.n_harmonic)
+        )(harmonic_spec)
         harmonic_spec = tf.transpose(harmonic_spec, perm=[0, 2, 1, 3])
         harmonic_spec = self.to_decibel(harmonic_spec)
         return harmonic_spec
-
-
 
 
 class ResNet_mtat(tf.keras.layers.Layer):
@@ -158,20 +180,20 @@ class ResNet_mtat(tf.keras.layers.Layer):
         self.res2 = Conv3_2d_resmp(conv_channels, 2)
         self.res3 = Conv3_2d_resmp(conv_channels, 2)
         self.res4 = Conv3_2d_resmp(conv_channels, 2)
-        self.res5 = Conv3_2d(conv_channels*2, 2)
-        self.res6 = Conv3_2d_resmp(conv_channels*2, (2, 3))
-        self.res7 = Conv3_2d_resmp(conv_channels*2, (2, 3))
+        self.res5 = Conv3_2d(conv_channels * 2, 2)
+        self.res6 = Conv3_2d_resmp(conv_channels * 2, (2, 3))
+        self.res7 = Conv3_2d_resmp(conv_channels * 2, (2, 3))
 
         # fully connected
         self.fc_1 = tf.keras.layers.Dense(conv_channels * 2)
         self.bn = tf.keras.layers.BatchNormalization()
         self.fc_2 = tf.keras.layers.Dense(self.num_class)
-        self.activation = tf.keras.layers.Activation('sigmoid')
+        self.activation = tf.keras.layers.Activation("sigmoid")
         self.dropout = tf.keras.layers.Dropout(0.5)
-        self.relu = tf.keras.layers.Activation('relu')
+        self.relu = tf.keras.layers.Activation("relu")
         self.gmp = tf.keras.layers.GlobalMaxPooling2D()
 
-    def call(self, x, training=False): 
+    def call(self, x, training=False):
         # residual convolution
         x = self.res1(x, training=training)
         x = self.res2(x, training=training)
@@ -199,9 +221,10 @@ class ResNet_mtat(tf.keras.layers.Layer):
 # modules for joint embeddings
 #############################################################
 
+
 class DenseLeakyReluLayer(tf.keras.layers.Layer):
-    """A dense layer followed by a LeakyRelu layer
-    """
+    """A dense layer followed by a LeakyRelu layer"""
+
     def __init__(self, n, alpha=0.3):
         super(DenseLeakyReluLayer, self).__init__()
         self.dense = tf.keras.layers.Dense(n, activation=None)
@@ -214,8 +237,8 @@ class DenseLeakyReluLayer(tf.keras.layers.Layer):
 
 
 class UnitNormLayer(tf.keras.layers.Layer):
-    """Normalize vectors (euclidean norm) in batch to unit hypersphere.
-    """
+    """Normalize vectors (euclidean norm) in batch to unit hypersphere."""
+
     def __init__(self):
         super(UnitNormLayer, self).__init__()
 
@@ -225,21 +248,25 @@ class UnitNormLayer(tf.keras.layers.Layer):
 
 
 class Wave_ResNet(tf.keras.layers.Layer):
-    def __init__(self, input_channels, conv_channels=128):
+    def __init__(self, input_channels, conv_channels=128, dataset="mtat"):
         super(Wave_ResNet, self).__init__()
-        self.num_class = 50
-        
+        if dataset == "mtat":
+            self.num_class = 50
+        elif dataset == "dcase":
+            self.num_class = 17
+        elif dataset == "keyword":
+            self.num_class = 35
+
         self.res1 = Conv3_2d(conv_channels, 2)
         self.res2 = Conv3_2d_resmp(conv_channels, 2)
         self.res3 = Conv3_2d_resmp(conv_channels, 2)
-        self.res4 = Conv3_2d(conv_channels*2, 2)
-        self.res5 = Conv3_2d_resmp(conv_channels*2, 2)
-        self.res6 = Conv3_2d_resmp(conv_channels*2, (2,3))
-        self.res7 = Conv3_2d(conv_channels*2*2, (2,3))
+        self.res4 = Conv3_2d(conv_channels * 2, 2)
+        self.res5 = Conv3_2d_resmp(conv_channels * 2, 2)
+        self.res6 = Conv3_2d_resmp(conv_channels * 2, (2, 3))
+        self.res7 = Conv3_2d(conv_channels * 2 * 2, (2, 3))
         # fully connected
         self.gmp = tf.keras.layers.GlobalMaxPooling2D()
         self.concat = tf.keras.layers.Concatenate()
-
 
     def call(self, x, training=False):
         # residual convolution
@@ -257,30 +284,45 @@ class Wave_ResNet(tf.keras.layers.Layer):
 class Conv3_2d(tf.keras.layers.Layer):
     def __init__(self, output_channels, pooling=2):
         super(Conv3_2d, self).__init__()
-        self.conv = tf.keras.layers.Conv2D(output_channels, kernel_size=(3,3) , padding='same')
+        self.conv = tf.keras.layers.Conv2D(
+            output_channels, kernel_size=(3, 3), padding="same"
+        )
         self.bn = tf.keras.layers.BatchNormalization()
-        self.relu = tf.keras.layers.Activation('relu')
+        self.relu = tf.keras.layers.Activation("relu")
         self.mp = tf.keras.layers.MaxPooling2D((pooling))
- 
- 
+
     def call(self, x, training=False):
-        out = self.mp(self.relu(self.bn(self.conv(x, training=training), training=training)), training=training)
+        out = self.mp(
+            self.relu(self.bn(self.conv(x, training=training), training=training)),
+            training=training,
+        )
         return out
 
 
 class Conv3_2d_resmp(tf.keras.layers.Layer):
     def __init__(self, output_channels, pooling=2):
         super(Conv3_2d_resmp, self).__init__()
-        self.conv_1 = tf.keras.layers.Conv2D(output_channels, kernel_size=(3,3), padding='same')
+        self.conv_1 = tf.keras.layers.Conv2D(
+            output_channels, kernel_size=(3, 3), padding="same"
+        )
         self.bn_1 = tf.keras.layers.BatchNormalization()
-        self.conv_2 = tf.keras.layers.Conv2D(output_channels, kernel_size=(3,3), padding='same')
+        self.conv_2 = tf.keras.layers.Conv2D(
+            output_channels, kernel_size=(3, 3), padding="same"
+        )
         self.bn_2 = tf.keras.layers.BatchNormalization()
-        self.relu = tf.keras.layers.Activation('relu')
+        self.relu = tf.keras.layers.Activation("relu")
         self.mp = tf.keras.layers.MaxPooling2D((pooling))
- 
 
     def call(self, x, training=False):
-        out = self.bn_2(self.conv_2(self.relu(self.bn_1(self.conv_1(x, training=training), training=training)), training=training), training=training)
+        out = self.bn_2(
+            self.conv_2(
+                self.relu(
+                    self.bn_1(self.conv_1(x, training=training), training=training)
+                ),
+                training=training,
+            ),
+            training=training,
+        )
         out = x + out
         out = self.mp(self.relu(out), training=training)
         return out
@@ -297,12 +339,12 @@ def se_fn(x, amplifying_ratio):
         num_features * amplifying_ratio,
         kernel_initializer="glorot_uniform",
     )(x)
-    #x = LeakyReLU(0.3)(x)
     x = Activation("relu")(x)
     x = Dense(num_features, activation="sigmoid", kernel_initializer="glorot_uniform")(
         x
     )
     return x
+
 
 def se_block(x, num_features, weight_decay, amplifying_ratio):
     x = basic_block(x, num_features, weight_decay, amplifying_ratio)
@@ -311,10 +353,16 @@ def se_block(x, num_features, weight_decay, amplifying_ratio):
 
 
 def basic_block(x, num_features, weight_decay, _):
-    x = Conv1D(num_features, kernel_size=3, padding='same', use_bias=True,
-             kernel_regularizer=l2(weight_decay), kernel_initializer='he_uniform')(x)
+    x = Conv1D(
+        num_features,
+        kernel_size=3,
+        padding="same",
+        use_bias=True,
+        kernel_regularizer=l2(weight_decay),
+        kernel_initializer="he_uniform",
+    )(x)
     x = BatchNormalization()(x)
-    x = Activation('relu')(x)
+    x = Activation("relu")(x)
     x = MaxPool1D(pool_size=3)(x)
     return x
 
@@ -341,7 +389,6 @@ def rese_block(x, num_features, weight_decay, amplifying_ratio):
         kernel_initializer="he_uniform",
     )(x)
     x = BatchNormalization()(x)
-    #x = LeakyReLU(0.3)(x)
     x = Activation("relu")(x)
     x = Dropout(0.2)(x)
     x = Conv1D(
@@ -356,19 +403,38 @@ def rese_block(x, num_features, weight_decay, amplifying_ratio):
     if amplifying_ratio > 0:
         x = Multiply()([x, se_fn(x, amplifying_ratio)])
     x = Add()([shortcut, x])
-    #x = LeakyReLU(0.3)(x)
     x = Activation("relu")(x)
     x = MaxPool1D(pool_size=3)(x)
     return x
 
+
 class MusicSinc1D(Layer):
-    def __init__(self, N_filt=256, Filt_dim=2501, fs=22050):
+    def __init__(
+        self, N_filt=256, Filt_dim=2501, fs=16000, stride=1, padding="SAME", **kwargs
+    ):
         self.N_filt = N_filt
         self.Filt_dim = Filt_dim
         self.fs = fs
+        self.stride = stride
+        self.padding = padding
 
-        super(MusicSinc1D, self).__init__()
+        super(MusicSinc1D, self).__init__(**kwargs)
+
+    def build(self, input_shape):
         # The filters are trainable parameters.
+        self.filt_b1 = self.add_weight(
+            name="filt_b1",
+            shape=(self.N_filt, 1),
+            initializer="uniform",
+            trainable=True,
+        )
+        self.filt_band = self.add_weight(
+            name="filt_band",
+            shape=(self.N_filt, 1),
+            initializer="uniform",
+            trainable=True,
+        )
+
         # Mel Initialization of the filterbanks
         low_freq_mel = 80
         high_freq_mel = 2595 * np.log10(1 + (self.fs / 2) / 700)  # Convert Hz to Mel
@@ -380,71 +446,64 @@ class MusicSinc1D(Layer):
         b2 = np.roll(f_cos, -1)
         b1[0] = 30
         b2[-1] = (self.fs / 2) - 100
-        self.freq_scale = self.fs * 10
-        self.filt_b1 = K.variable(b1 / self.freq_scale)
-        self.filt_band = K.variable((b2 - b1) / self.freq_scale)
+        self.B1 = np.expand_dims(b1, axis=-1)
+        self.B2 = np.expand_dims(b2, axis=-1)
+        self.freq_scale = self.fs * 1.0
 
-        # Get beginning and end frequencies of the filters.
+        t_right = tf.constant(
+            tf.linspace(1.0, (self.Filt_dim - 1) / 2, int((self.Filt_dim - 1) / 2))
+            / self.fs,
+            tf.float32,
+        )
+        self.T_Right = tf.tile(tf.expand_dims(t_right, axis=0), (self.N_filt, 1))
+
+        n = tf.linspace(0, self.Filt_dim - 1, self.Filt_dim)
+        window = 0.54 - 0.46 * tf.cos(2 * math.pi * n / self.Filt_dim)
+        window = tf.cast(window, tf.float32)
+        self.Window = tf.tile(tf.expand_dims(window, axis=0), (self.N_filt, 1))
+
+        self.set_weights(
+            [self.B1 / self.freq_scale, (self.B2 - self.B1) / self.freq_scale]
+        )
+
+        super(MusicSinc1D, self).build(input_shape)  # Be sure to call this at the end
+
+    def call(self, x, **kwargs):
+
         min_freq = 50.0
         min_band = 50.0
-        self.filt_beg_freq = K.abs(self.filt_b1) + min_freq / self.freq_scale
-        self.filt_end_freq = self.filt_beg_freq + (
-            K.abs(self.filt_band) + min_band / self.freq_scale
+
+        filt_beg_freq = tf.abs(self.filt_b1) + min_freq / self.freq_scale
+        filt_end_freq = filt_beg_freq + (
+            tf.abs(self.filt_band) + min_band / self.freq_scale
         )
 
-        # Filter window (hamming).
-        n = np.linspace(0, self.Filt_dim, self.Filt_dim)
-        window = 0.54 - 0.46 * K.cos(2 * math.pi * n / self.Filt_dim)
-        window = K.cast(window, "float32")
-        self.window = K.variable(window)
+        low_pass1 = 2 * filt_beg_freq * self.sinc(filt_beg_freq * self.freq_scale)
+        low_pass2 = 2 * filt_end_freq * self.sinc(filt_end_freq * self.freq_scale)
+        band_pass = low_pass2 - low_pass1
+        band_pass = band_pass / tf.reduce_max(band_pass, axis=1, keepdims=True)
+        windowed_band_pass = band_pass * self.Window
 
-        # TODO what is this?
-        t_right_linspace = np.linspace(
-            1, (self.Filt_dim - 1) / 2, int((self.Filt_dim - 1) / 2)
-        )
-        self.t_right = K.variable(t_right_linspace / self.fs)
+        filters = tf.transpose(windowed_band_pass)
+        filters = tf.reshape(filters, (self.Filt_dim, 1, self.N_filt))
 
-
-
-        # Compute the filters.
-        output_list = []
-        for i in range(self.N_filt):
-            low_pass1 = (
-                2
-                * self.filt_beg_freq[i]
-                * sinc(self.filt_beg_freq[i] * self.freq_scale, self.t_right)
-            )
-            low_pass2 = (
-                2
-                * self.filt_end_freq[i]
-                * sinc(self.filt_end_freq[i] * self.freq_scale, self.t_right)
-            )
-            band_pass = low_pass2 - low_pass1
-            band_pass = band_pass / K.max(band_pass)
-            output_list.append(band_pass * self.window)
-        self.filters = K.stack(output_list)  # (80, 251)
-        self.filters = K.transpose(self.filters)  # (251, 80)
-        self.filters = K.reshape(
-            self.filters, (self.Filt_dim, 1, self.N_filt)
-        )  # (251,1,80) in TF: (filter_width, in_channels, out_channels) in
-        # PyTorch (out_channels, in_channels, filter_width)
         # Do the convolution.
-    def call(self, x):
-        out = K.conv1d(x, kernel=self.filters)
+        out = tf.nn.conv1d(x, filters=filters, stride=self.stride, padding=self.padding)
 
         return out
 
-'''
+    def sinc(self, band):
+        y_right = tf.sin(2 * band * self.T_Right) / (2 * band * self.T_Right)
+        y_left = tf.reverse(y_right, [1])
+        y = tf.concat([y_left, tf.ones((self.N_filt, 1)), y_right], axis=1)
+        return y
+
     def compute_output_shape(self, input_shape):
         new_size = conv_utils.conv_output_length(
-            input_shape[1], self.Filt_dim, padding="valid", stride=1, dilation=1
+            input_shape[1],
+            self.Filt_dim,
+            padding=self.padding.lower(),
+            stride=self.stride,
+            dilation=1,
         )
         return (input_shape[0],) + (new_size,) + (self.N_filt,)
-'''
-
-def sinc(band, t_right):
-    y_right = K.sin(2 * band * t_right) / (2 * band * t_right)
-    # y_left = flip(y_right, 0) TODO remove if useless
-    y_left = K.reverse(y_right, 0)
-    y = K.concatenate([y_left, K.variable(K.ones(1)), y_right])
-    return y
