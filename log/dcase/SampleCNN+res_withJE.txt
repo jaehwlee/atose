@@ -1,0 +1,315 @@
+Namespace(batch_size=16, block='res', data_path='./../dataset', dataset='dcase', encoder_type='SC', gpu='0', latent=50, ld=1.0, model_save_path='./../saved_models', withJE=True)
+True
+@@@@@@@@@@@@@@@@@@@Start training Stage 1@@@@@@@@@@@@@@@@@@
+
+Epoch: 1, TotalLoss : 0.0454,  AELoss : 0.0636, PWLoss : 0.1089
+Epoch: 2, TotalLoss : 0.0261,  AELoss : 0.0629, PWLoss : 0.0890
+Epoch: 3, TotalLoss : 0.0182,  AELoss : 0.0623, PWLoss : 0.0806
+Epoch: 4, TotalLoss : 0.0141,  AELoss : 0.0620, PWLoss : 0.0761
+Epoch: 5, TotalLoss : 0.0115,  AELoss : 0.0617, PWLoss : 0.0732
+Epoch: 6, TotalLoss : 0.0096,  AELoss : 0.0615, PWLoss : 0.0711
+Epoch: 7, TotalLoss : 0.0083,  AELoss : 0.0614, PWLoss : 0.0697
+Epoch: 8, TotalLoss : 0.0073,  AELoss : 0.0613, PWLoss : 0.0685
+Epoch: 9, TotalLoss : 0.0065,  AELoss : 0.0612, PWLoss : 0.0676
+Epoch: 10, TotalLoss : 0.0058,  AELoss : 0.0611, PWLoss : 0.0669
+Epoch: 11, TotalLoss : 0.0053,  AELoss : 0.0610, PWLoss : 0.0663
+Epoch: 12, TotalLoss : 0.0049,  AELoss : 0.0610, PWLoss : 0.0658
+Epoch: 13, TotalLoss : 0.0045,  AELoss : 0.0609, PWLoss : 0.0654
+Epoch: 14, TotalLoss : 0.0042,  AELoss : 0.0609, PWLoss : 0.0650
+Epoch: 15, TotalLoss : 0.0039,  AELoss : 0.0608, PWLoss : 0.0647
+Epoch: 16, TotalLoss : 0.0036,  AELoss : 0.0608, PWLoss : 0.0644
+Epoch: 17, TotalLoss : 0.0034,  AELoss : 0.0608, PWLoss : 0.0642
+Epoch: 18, TotalLoss : 0.0032,  AELoss : 0.0607, PWLoss : 0.0640
+Epoch: 19, TotalLoss : 0.0031,  AELoss : 0.0607, PWLoss : 0.0638
+Epoch: 20, TotalLoss : 0.0029,  AELoss : 0.0607, PWLoss : 0.0636
+Epoch: 21, TotalLoss : 0.0028,  AELoss : 0.0607, PWLoss : 0.0635
+Epoch: 22, TotalLoss : 0.0027,  AELoss : 0.0607, PWLoss : 0.0633
+Epoch: 23, TotalLoss : 0.0025,  AELoss : 0.0606, PWLoss : 0.0632
+Epoch: 24, TotalLoss : 0.0024,  AELoss : 0.0606, PWLoss : 0.0630
+Epoch: 25, TotalLoss : 0.0023,  AELoss : 0.0606, PWLoss : 0.0629
+Epoch: 26, TotalLoss : 0.0022,  AELoss : 0.0606, PWLoss : 0.0628
+Epoch: 27, TotalLoss : 0.0022,  AELoss : 0.0606, PWLoss : 0.0627
+Epoch: 28, TotalLoss : 0.0021,  AELoss : 0.0605, PWLoss : 0.0626
+Epoch: 29, TotalLoss : 0.0020,  AELoss : 0.0605, PWLoss : 0.0625
+Epoch: 30, TotalLoss : 0.0019,  AELoss : 0.0605, PWLoss : 0.0624
+Epoch: 31, TotalLoss : 0.0019,  AELoss : 0.0605, PWLoss : 0.0624
+Epoch: 32, TotalLoss : 0.0018,  AELoss : 0.0605, PWLoss : 0.0623
+Epoch: 33, TotalLoss : 0.0018,  AELoss : 0.0605, PWLoss : 0.0622
+Epoch: 34, TotalLoss : 0.0017,  AELoss : 0.0605, PWLoss : 0.0622
+Epoch: 35, TotalLoss : 0.0017,  AELoss : 0.0604, PWLoss : 0.0621
+Epoch: 36, TotalLoss : 0.0016,  AELoss : 0.0604, PWLoss : 0.0621
+Epoch: 37, TotalLoss : 0.0016,  AELoss : 0.0604, PWLoss : 0.0620
+Epoch: 38, TotalLoss : 0.0015,  AELoss : 0.0604, PWLoss : 0.0619
+Epoch: 39, TotalLoss : 0.0015,  AELoss : 0.0604, PWLoss : 0.0619
+Epoch: 40, TotalLoss : 0.0015,  AELoss : 0.0604, PWLoss : 0.0619
+Epoch: 41, TotalLoss : 0.0014,  AELoss : 0.0604, PWLoss : 0.0618
+Epoch: 42, TotalLoss : 0.0014,  AELoss : 0.0604, PWLoss : 0.0618
+Epoch: 43, TotalLoss : 0.0014,  AELoss : 0.0604, PWLoss : 0.0617
+Epoch: 44, TotalLoss : 0.0013,  AELoss : 0.0604, PWLoss : 0.0617
+Epoch: 45, TotalLoss : 0.0013,  AELoss : 0.0604, PWLoss : 0.0617
+Epoch: 46, TotalLoss : 0.0013,  AELoss : 0.0604, PWLoss : 0.0616
+Epoch: 47, TotalLoss : 0.0012,  AELoss : 0.0603, PWLoss : 0.0616
+Epoch: 48, TotalLoss : 0.0012,  AELoss : 0.0604, PWLoss : 0.0616
+Epoch: 49, TotalLoss : 0.0012,  AELoss : 0.0604, PWLoss : 0.0616
+Epoch: 50, TotalLoss : 0.0012,  AELoss : 0.0604, PWLoss : 0.0615
+Epoch: 51, TotalLoss : 0.0011,  AELoss : 0.0604, PWLoss : 0.0615
+Epoch: 52, TotalLoss : 0.0011,  AELoss : 0.0604, PWLoss : 0.0615
+Epoch: 53, TotalLoss : 0.0011,  AELoss : 0.0604, PWLoss : 0.0615
+Epoch: 54, TotalLoss : 0.0011,  AELoss : 0.0604, PWLoss : 0.0615
+Epoch: 55, TotalLoss : 0.0011,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 56, TotalLoss : 0.0010,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 57, TotalLoss : 0.0010,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 58, TotalLoss : 0.0010,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 59, TotalLoss : 0.0010,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 60, TotalLoss : 0.0010,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 1, TotalLoss : 0.0010,  AELoss : 0.0604, PWLoss : 0.0614
+Epoch: 2, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 3, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 4, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 5, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 6, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 7, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 8, TotalLoss : 0.0009,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 9, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 10, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0613
+Epoch: 11, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 12, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 13, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 14, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 15, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 16, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 17, TotalLoss : 0.0008,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 18, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 19, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 20, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 1, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0612
+Epoch: 2, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 3, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 4, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 5, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 6, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 7, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 8, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 9, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 10, TotalLoss : 0.0007,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 11, TotalLoss : 0.0006,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 12, TotalLoss : 0.0006,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 13, TotalLoss : 0.0006,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 14, TotalLoss : 0.0006,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 15, TotalLoss : 0.0006,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 16, TotalLoss : 0.0006,  AELoss : 0.0604, PWLoss : 0.0611
+Epoch: 17, TotalLoss : 0.0006,  AELoss : 0.0605, PWLoss : 0.0611
+Epoch: 18, TotalLoss : 0.0006,  AELoss : 0.0605, PWLoss : 0.0611
+Epoch: 19, TotalLoss : 0.0006,  AELoss : 0.0605, PWLoss : 0.0610
+Epoch: 20, TotalLoss : 0.0006,  AELoss : 0.0605, PWLoss : 0.0610
+AELoss : 0.00006
+
+
+@@@@@@@@@@@@@@@@@@@Start training Stage 2@@@@@@@@@@@@@@@@@@
+
+Epoch : 1, Loss : 0.2181, AUC : 0.2938
+Epoch : 2, Loss : 0.1936, AUC : 0.3519
+Epoch : 3, Loss : 0.1826, AUC : 0.3722
+Epoch : 4, Loss : 0.1759, AUC : 0.3833
+Epoch : 5, Loss : 0.1713, AUC : 0.3926
+Epoch : 6, Loss : 0.1679, AUC : 0.4004
+Epoch : 7, Loss : 0.1653, AUC : 0.4070
+Epoch : 8, Loss : 0.1632, AUC : 0.4127
+Epoch : 9, Loss : 0.1614, AUC : 0.4179
+Epoch : 10, Loss : 0.1600, AUC : 0.4220
+Epoch : 11, Loss : 0.1588, AUC : 0.4256
+Epoch : 12, Loss : 0.1577, AUC : 0.4287
+Epoch : 13, Loss : 0.1568, AUC : 0.4314
+Epoch : 14, Loss : 0.1560, AUC : 0.4338
+Epoch : 15, Loss : 0.1553, AUC : 0.4360
+Epoch : 16, Loss : 0.1547, AUC : 0.4379
+Epoch : 17, Loss : 0.1541, AUC : 0.4398
+Epoch : 18, Loss : 0.1536, AUC : 0.4414
+Epoch : 19, Loss : 0.1531, AUC : 0.4430
+Epoch : 20, Loss : 0.1526, AUC : 0.4444
+Epoch : 21, Loss : 0.1522, AUC : 0.4456
+Epoch : 22, Loss : 0.1518, AUC : 0.4467
+Epoch : 23, Loss : 0.1515, AUC : 0.4479
+Epoch : 24, Loss : 0.1512, AUC : 0.4488
+Epoch : 25, Loss : 0.1509, AUC : 0.4496
+Epoch : 26, Loss : 0.1506, AUC : 0.4506
+Epoch : 27, Loss : 0.1503, AUC : 0.4514
+Epoch : 28, Loss : 0.1501, AUC : 0.4520
+Epoch : 29, Loss : 0.1498, AUC : 0.4527
+Epoch : 30, Loss : 0.1496, AUC : 0.4534
+Epoch : 31, Loss : 0.1494, AUC : 0.4541
+Epoch : 32, Loss : 0.1491, AUC : 0.4547
+Epoch : 33, Loss : 0.1489, AUC : 0.4552
+Epoch : 34, Loss : 0.1488, AUC : 0.4558
+Epoch : 35, Loss : 0.1486, AUC : 0.4563
+Epoch : 36, Loss : 0.1484, AUC : 0.4567
+Epoch : 37, Loss : 0.1482, AUC : 0.4571
+Epoch : 38, Loss : 0.1481, AUC : 0.4575
+Epoch : 39, Loss : 0.1479, AUC : 0.4580
+Epoch : 40, Loss : 0.1478, AUC : 0.4584
+Epoch : 41, Loss : 0.1476, AUC : 0.4588
+Epoch : 42, Loss : 0.1475, AUC : 0.4592
+Epoch : 43, Loss : 0.1474, AUC : 0.4595
+Epoch : 44, Loss : 0.1472, AUC : 0.4599
+Epoch : 45, Loss : 0.1471, AUC : 0.4602
+Epoch : 46, Loss : 0.1470, AUC : 0.4606
+Epoch : 47, Loss : 0.1469, AUC : 0.4609
+Epoch : 48, Loss : 0.1468, AUC : 0.4612
+Epoch : 49, Loss : 0.1467, AUC : 0.4615
+Epoch : 50, Loss : 0.1466, AUC : 0.4617
+Epoch : 51, Loss : 0.1465, AUC : 0.4620
+Epoch : 52, Loss : 0.1464, AUC : 0.4623
+Epoch : 53, Loss : 0.1463, AUC : 0.4625
+Epoch : 54, Loss : 0.1462, AUC : 0.4628
+Epoch : 55, Loss : 0.1461, AUC : 0.4631
+Epoch : 56, Loss : 0.1460, AUC : 0.4634
+Epoch : 57, Loss : 0.1459, AUC : 0.4636
+Epoch : 58, Loss : 0.1458, AUC : 0.4638
+Epoch : 59, Loss : 0.1457, AUC : 0.4640
+Epoch : 60, Loss : 0.1457, AUC : 0.4642
+Epoch : 1, Loss : 0.1456, AUC : 0.4645
+Epoch : 2, Loss : 0.1455, AUC : 0.4647
+Epoch : 3, Loss : 0.1454, AUC : 0.4649
+Epoch : 4, Loss : 0.1453, AUC : 0.4652
+Epoch : 5, Loss : 0.1452, AUC : 0.4654
+Epoch : 6, Loss : 0.1451, AUC : 0.4656
+Epoch : 7, Loss : 0.1450, AUC : 0.4658
+Epoch : 8, Loss : 0.1449, AUC : 0.4660
+Epoch : 9, Loss : 0.1448, AUC : 0.4662
+Epoch : 10, Loss : 0.1448, AUC : 0.4664
+Epoch : 11, Loss : 0.1447, AUC : 0.4667
+Epoch : 12, Loss : 0.1446, AUC : 0.4668
+Epoch : 13, Loss : 0.1446, AUC : 0.4671
+Epoch : 14, Loss : 0.1445, AUC : 0.4672
+Epoch : 15, Loss : 0.1444, AUC : 0.4674
+Epoch : 16, Loss : 0.1443, AUC : 0.4675
+Epoch : 17, Loss : 0.1443, AUC : 0.4677
+Epoch : 18, Loss : 0.1442, AUC : 0.4679
+Epoch : 19, Loss : 0.1442, AUC : 0.4681
+Epoch : 20, Loss : 0.1441, AUC : 0.4682
+Test Loss : 0.1517990231513977, Test AUC : 0.4584
+Epoch : 1, Loss : 0.1440, AUC : 0.4684
+Epoch : 2, Loss : 0.1440, AUC : 0.4685
+Epoch : 3, Loss : 0.1439, AUC : 0.4686
+Epoch : 4, Loss : 0.1439, AUC : 0.4688
+Epoch : 5, Loss : 0.1438, AUC : 0.4689
+Epoch : 6, Loss : 0.1438, AUC : 0.4690
+Epoch : 7, Loss : 0.1437, AUC : 0.4692
+Epoch : 8, Loss : 0.1437, AUC : 0.4693
+Epoch : 9, Loss : 0.1436, AUC : 0.4694
+Epoch : 10, Loss : 0.1436, AUC : 0.4695
+Epoch : 11, Loss : 0.1435, AUC : 0.4697
+Epoch : 12, Loss : 0.1435, AUC : 0.4698
+Epoch : 13, Loss : 0.1434, AUC : 0.4699
+Epoch : 14, Loss : 0.1434, AUC : 0.4700
+Epoch : 15, Loss : 0.1433, AUC : 0.4701
+Epoch : 16, Loss : 0.1433, AUC : 0.4702
+Epoch : 17, Loss : 0.1432, AUC : 0.4703
+Epoch : 18, Loss : 0.1432, AUC : 0.4704
+Epoch : 19, Loss : 0.1432, AUC : 0.4706
+Epoch : 20, Loss : 0.1431, AUC : 0.4706
+Test Loss : 0.1518314629793167, Test AUC : 0.4565
+Epoch : 1, Loss : 0.1431, AUC : 0.4707
+Epoch : 2, Loss : 0.1430, AUC : 0.4708
+Epoch : 3, Loss : 0.1430, AUC : 0.4709
+Epoch : 4, Loss : 0.1430, AUC : 0.4710
+Epoch : 5, Loss : 0.1429, AUC : 0.4711
+Epoch : 6, Loss : 0.1429, AUC : 0.4712
+Epoch : 7, Loss : 0.1429, AUC : 0.4713
+Epoch : 8, Loss : 0.1428, AUC : 0.4714
+Epoch : 9, Loss : 0.1428, AUC : 0.4715
+Epoch : 10, Loss : 0.1428, AUC : 0.4716
+Epoch : 11, Loss : 0.1427, AUC : 0.4716
+Epoch : 12, Loss : 0.1427, AUC : 0.4717
+Epoch : 13, Loss : 0.1427, AUC : 0.4718
+Epoch : 14, Loss : 0.1426, AUC : 0.4719
+Epoch : 15, Loss : 0.1426, AUC : 0.4720
+Epoch : 16, Loss : 0.1426, AUC : 0.4720
+Epoch : 17, Loss : 0.1425, AUC : 0.4721
+Epoch : 18, Loss : 0.1425, AUC : 0.4722
+Epoch : 19, Loss : 0.1425, AUC : 0.4723
+Epoch : 20, Loss : 0.1425, AUC : 0.4723
+Epoch : 21, Loss : 0.1424, AUC : 0.4724
+Epoch : 22, Loss : 0.1424, AUC : 0.4725
+Epoch : 23, Loss : 0.1424, AUC : 0.4726
+Epoch : 24, Loss : 0.1424, AUC : 0.4726
+Epoch : 25, Loss : 0.1423, AUC : 0.4727
+Epoch : 26, Loss : 0.1423, AUC : 0.4727
+Epoch : 27, Loss : 0.1423, AUC : 0.4728
+Epoch : 28, Loss : 0.1423, AUC : 0.4728
+Epoch : 29, Loss : 0.1422, AUC : 0.4729
+Epoch : 30, Loss : 0.1422, AUC : 0.4730
+Epoch : 31, Loss : 0.1422, AUC : 0.4730
+Epoch : 32, Loss : 0.1422, AUC : 0.4731
+Epoch : 33, Loss : 0.1422, AUC : 0.4731
+Epoch : 34, Loss : 0.1421, AUC : 0.4732
+Epoch : 35, Loss : 0.1421, AUC : 0.4732
+Epoch : 36, Loss : 0.1421, AUC : 0.4733
+Epoch : 37, Loss : 0.1421, AUC : 0.4733
+Epoch : 38, Loss : 0.1421, AUC : 0.4734
+Epoch : 39, Loss : 0.1420, AUC : 0.4734
+Epoch : 40, Loss : 0.1420, AUC : 0.4735
+Epoch : 41, Loss : 0.1420, AUC : 0.4735
+Epoch : 42, Loss : 0.1420, AUC : 0.4736
+Epoch : 43, Loss : 0.1420, AUC : 0.4736
+Epoch : 44, Loss : 0.1419, AUC : 0.4737
+Epoch : 45, Loss : 0.1419, AUC : 0.4737
+Epoch : 46, Loss : 0.1419, AUC : 0.4738
+Epoch : 47, Loss : 0.1419, AUC : 0.4738
+Epoch : 48, Loss : 0.1419, AUC : 0.4738
+Epoch : 49, Loss : 0.1419, AUC : 0.4739
+Epoch : 50, Loss : 0.1418, AUC : 0.4739
+Epoch : 51, Loss : 0.1418, AUC : 0.4740
+Epoch : 52, Loss : 0.1418, AUC : 0.4740
+Epoch : 53, Loss : 0.1418, AUC : 0.4740
+Epoch : 54, Loss : 0.1418, AUC : 0.4741
+Epoch : 55, Loss : 0.1418, AUC : 0.4741
+Epoch : 56, Loss : 0.1417, AUC : 0.4742
+Epoch : 57, Loss : 0.1417, AUC : 0.4742
+Epoch : 58, Loss : 0.1417, AUC : 0.4742
+Epoch : 59, Loss : 0.1417, AUC : 0.4743
+Epoch : 60, Loss : 0.1417, AUC : 0.4743
+Epoch : 61, Loss : 0.1417, AUC : 0.4743
+Epoch : 62, Loss : 0.1417, AUC : 0.4744
+Epoch : 63, Loss : 0.1416, AUC : 0.4744
+Epoch : 64, Loss : 0.1416, AUC : 0.4744
+Epoch : 65, Loss : 0.1416, AUC : 0.4745
+Epoch : 66, Loss : 0.1416, AUC : 0.4745
+Epoch : 67, Loss : 0.1416, AUC : 0.4745
+Epoch : 68, Loss : 0.1416, AUC : 0.4746
+Epoch : 69, Loss : 0.1416, AUC : 0.4746
+Epoch : 70, Loss : 0.1415, AUC : 0.4746
+Epoch : 71, Loss : 0.1415, AUC : 0.4746
+Epoch : 72, Loss : 0.1415, AUC : 0.4747
+Epoch : 73, Loss : 0.1415, AUC : 0.4747
+Epoch : 74, Loss : 0.1415, AUC : 0.4747
+Epoch : 75, Loss : 0.1415, AUC : 0.4748
+Epoch : 76, Loss : 0.1415, AUC : 0.4748
+Epoch : 77, Loss : 0.1415, AUC : 0.4748
+Epoch : 78, Loss : 0.1414, AUC : 0.4748
+Epoch : 79, Loss : 0.1414, AUC : 0.4749
+Epoch : 80, Loss : 0.1414, AUC : 0.4749
+Epoch : 81, Loss : 0.1414, AUC : 0.4749
+Epoch : 82, Loss : 0.1414, AUC : 0.4750
+Epoch : 83, Loss : 0.1414, AUC : 0.4750
+Epoch : 84, Loss : 0.1414, AUC : 0.4750
+Epoch : 85, Loss : 0.1414, AUC : 0.4750
+Epoch : 86, Loss : 0.1414, AUC : 0.4751
+Epoch : 87, Loss : 0.1413, AUC : 0.4751
+Epoch : 88, Loss : 0.1413, AUC : 0.4751
+Epoch : 89, Loss : 0.1413, AUC : 0.4751
+Epoch : 90, Loss : 0.1413, AUC : 0.4752
+Epoch : 91, Loss : 0.1413, AUC : 0.4752
+Epoch : 92, Loss : 0.1413, AUC : 0.4752
+Epoch : 93, Loss : 0.1413, AUC : 0.4753
+Epoch : 94, Loss : 0.1413, AUC : 0.4753
+Epoch : 95, Loss : 0.1413, AUC : 0.4753
+Epoch : 96, Loss : 0.1413, AUC : 0.4753
+Epoch : 97, Loss : 0.1412, AUC : 0.4754
+Epoch : 98, Loss : 0.1412, AUC : 0.4754
+Epoch : 99, Loss : 0.1412, AUC : 0.4754
+Epoch : 100, Loss : 0.1412, AUC : 0.4754
+Time taken :  61857.69067406654
+tf.Tensor(0.4448035, shape=(), dtype=float32)
+tf.Tensor(0.4448035, shape=(), dtype=float32)
+Test Loss : 0.15691252052783966, Test F1 Score : 0.4448
