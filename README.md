@@ -1,13 +1,13 @@
-# JETATAG : Joint Embeddings Training Algorithm for Auto-tagging
+# ATOSE: Audio Tagging with One-Side Joint Embedding
 
-This is the repository for the method presented in the paper: "Audio Auto-tagging with Joint Embeddings" by J. Lee, J. Kim and M. Cho. It can learn not only acoustic features of audio but also semantic information of tags without additional data. As a result, our model achevies state of the art in MTAT, DCASE2017-task4, Speech Commands datasets.
+This is the repository for the method presented in the paper: "ATOSE: Audio Tagging with One-Side Joint Embedding" by J. Lee, D. Moon, J. Kim and M. Cho. It can learn not only acoustic features of audio but also semantic information of tags without additional data. As a result, our model achevies state of the art in MTAT, DCASE2017-task4, Speech Commands datasets.
 
 </br>
 
-![image](https://github.com/jaehwlee/jetatag/blob/main/assets/model_architecture.png)
+![image](https://github.com/jaehwlee/jetatag/blob/main/assets/fig1-1.png)
 * **Tag Autoencoder** : Module for extracting tag domain features from tags
 * **Feature Extractor** : Module for extracting audio domain features from source data. Our joint embedding technique utilizes feature extractors used in conventional tagging models as a general approach applicable to other models that already exist. For more readable feature extractor, please check [this repository](https://github.com/jaehwlee/music-auto-tagging-models)
-* **Projection Head** : Module for mapping features of a music domain to embedded vectors projected into the tag domain. 
+* **Projector** : Module for mapping features of a music domain to embedded vectors projected into the tag domain. 
 * **Classifier** : Module for classifying features in the extracted music domain into tags using a pre-trained feature extractor in stage 1.
 
 </br>
